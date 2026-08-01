@@ -77,11 +77,7 @@ impl Entry {
         if hash.is_empty() {
             return None;
         }
-        Some(Entry {
-            hash,
-            mime,
-            preview,
-        })
+        Some(Entry { hash, mime, preview })
     }
 }
 
@@ -105,13 +101,7 @@ fn write_index(entries: &[Entry]) -> io::Result<()> {
     fs::rename(tmp, index_path())
 }
 
-pub fn upsert_entry(
-    hash: &str,
-    mime: &str,
-    preview: &str,
-    data: &[u8],
-    max_items: usize,
-) -> io::Result<()> {
+pub fn upsert_entry(hash: &str, mime: &str, preview: &str, data: &[u8], max_items: usize) -> io::Result<()> {
     ensure_dirs()?;
 
     let entry_file = entries_dir().join(hash);
@@ -144,10 +134,7 @@ pub fn read_entry_data(hash: &str) -> io::Result<Vec<u8>> {
 }
 
 pub fn entry_mime(hash: &str) -> Option<String> {
-    read_index()
-        .into_iter()
-        .find(|e| e.hash == hash)
-        .map(|e| e.mime)
+    read_index().into_iter().find(|e| e.hash == hash).map(|e| e.mime)
 }
 
 pub fn save_last_image(mime: &str, data: &[u8]) -> io::Result<()> {
@@ -189,13 +176,7 @@ pub fn make_text_preview(text: &str) -> String {
     let line_count = text.lines().count().max(1);
     let flattened: String = text
         .chars()
-        .map(|c| {
-            if c == '\n' || c == '\t' || c == '\r' {
-                ' '
-            } else {
-                c
-            }
-        })
+        .map(|c| if c == '\n' || c == '\t' || c == '\r' { ' ' } else { c })
         .collect();
     let trimmed = flattened.trim();
 

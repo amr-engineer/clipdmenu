@@ -22,8 +22,8 @@ use std::time::{Duration, Instant};
 use x11rb::connection::Connection;
 use x11rb::protocol::xfixes::ConnectionExt as _;
 use x11rb::protocol::xproto::{
-    AtomEnum, ChangeWindowAttributesAux, ConnectionExt as _, CreateWindowAux, EventMask, Property,
-    PropMode, SelectionNotifyEvent, SelectionRequestEvent, WindowClass, SELECTION_NOTIFY_EVENT,
+    AtomEnum, ChangeWindowAttributesAux, ConnectionExt as _, CreateWindowAux, EventMask, PropMode, Property,
+    SelectionNotifyEvent, SelectionRequestEvent, WindowClass, SELECTION_NOTIFY_EVENT,
 };
 use x11rb::protocol::{xfixes, Event};
 use x11rb::rust_connection::RustConnection;
@@ -147,7 +147,11 @@ fn run() -> Result<()> {
 
     eprintln!(
         "clipdmenud: watching {}(cache: {})",
-        if cfg.watch_primary { "CLIPBOARD + PRIMARY " } else { "CLIPBOARD " },
+        if cfg.watch_primary {
+            "CLIPBOARD + PRIMARY "
+        } else {
+            "CLIPBOARD "
+        },
         clipdmenu_common::cache_dir().display()
     );
 
@@ -162,20 +166,15 @@ fn run() -> Result<()> {
             match event {
                 Event::XfixesSelectionNotify(ev) => {
                     if ev.owner != 0
-                        && (ev.selection == atoms.clipboard
-                            || (cfg.watch_primary && ev.selection == atoms.primary))
+                        && (ev.selection == atoms.clipboard || (cfg.watch_primary && ev.selection == atoms.primary))
                     {
-                        if let Err(e) =
-                            capture_selection(&conn, window, ev.selection, &atoms, cfg.max_items)
-                        {
+                        if let Err(e) = capture_selection(&conn, window, ev.selection, &atoms, cfg.max_items) {
                             eprintln!("clipdmenud: capture failed: {e}");
                         }
                     }
                 }
                 Event::SelectionRequest(ev) => {
-                    if let Err(e) =
-                        handle_selection_request(&conn, &ev, &owned, &atoms, &mut pending)
-                    {
+                    if let Err(e) = handle_selection_request(&conn, &ev, &owned, &atoms, &mut pending) {
                         eprintln!("clipdmenud: selection request failed: {e}");
                     }
                 }
@@ -246,12 +245,7 @@ fn spawn_ipc_thread(tx: mpsc::Sender<(String, mpsc::Sender<String>)>) -> Result<
     Ok(())
 }
 
-fn handle_select(
-    conn: &RustConnection,
-    window: Window,
-    atoms: &Atoms,
-    id: &str,
-) -> Result<OwnedSelection> {
+fn handle_select(conn: &RustConnection, window: Window, atoms: &Atoms, id: &str) -> Result<OwnedSelection> {
     let (mime, data) = if id == clipdmenu_common::LAST_IMAGE_ID {
         clipdmenu_common::read_last_image().ok_or("no image cached yet")?
     } else {
@@ -286,8 +280,7 @@ fn capture_selection(
         return Ok(());
     }
 
-    let cookies: std::result::Result<Vec<_>, _> =
-        targets.iter().map(|&a| conn.get_atom_name(a)).collect();
+    let cookies: std::result::Result<Vec<_>, _> = targets.iter().map(|&a| conn.get_atom_name(a)).collect();
     let cookies = cookies?;
 
     let mut text_atom: Option<Atom> = None;
@@ -313,20 +306,12 @@ fn capture_selection(
     }
 
     if let Some(text_atom) = text_atom {
-        if let Some((data, _)) =
-            fetch_selection(conn, window, selection, text_atom, atoms.transfer_prop, atoms.incr)?
-        {
+        if let Some((data, _)) = fetch_selection(conn, window, selection, text_atom, atoms.transfer_prop, atoms.incr)? {
             if let Ok(text) = String::from_utf8(data) {
                 if !text.trim().is_empty() {
                     let hash = clipdmenu_common::hash_bytes(text.as_bytes());
                     let preview = clipdmenu_common::make_text_preview(&text);
-                    clipdmenu_common::upsert_entry(
-                        &hash,
-                        "text/plain",
-                        &preview,
-                        text.as_bytes(),
-                        max_items,
-                    )?;
+                    clipdmenu_common::upsert_entry(&hash, "text/plain", &preview, text.as_bytes(), max_items)?;
                 }
             }
         }
@@ -339,14 +324,8 @@ fn capture_selection(
         .or_else(|| image_candidates.first());
 
     if let Some((image_atom, mime)) = chosen_image {
-        if let Some((data, _)) = fetch_selection(
-            conn,
-            window,
-            selection,
-            *image_atom,
-            atoms.transfer_prop,
-            atoms.incr,
-        )? {
+        if let Some((data, _)) = fetch_selection(conn, window, selection, *image_atom, atoms.transfer_prop, atoms.incr)?
+        {
             if !data.is_empty() {
                 clipdmenu_common::save_last_image(mime, &data)?;
             }
@@ -356,14 +335,8 @@ fn capture_selection(
     Ok(())
 }
 
-fn get_targets(
-    conn: &RustConnection,
-    window: Window,
-    selection: Atom,
-    atoms: &Atoms,
-) -> Result<Vec<Atom>> {
-    match fetch_selection(conn, window, selection, atoms.targets, atoms.transfer_prop, atoms.incr)?
-    {
+fn get_targets(conn: &RustConnection, window: Window, selection: Atom, atoms: &Atoms) -> Result<Vec<Atom>> {
+    match fetch_selection(conn, window, selection, atoms.targets, atoms.transfer_prop, atoms.incr)? {
         Some((data, _)) => Ok(data
             .chunks_exact(4)
             .map(|c| u32::from_ne_bytes([c[0], c[1], c[2], c[3]]))
@@ -405,8 +378,7 @@ fn fetch_selection(
         conn.delete_property(window, property)?;
         conn.flush()?;
         loop {
-            if wait_for_property_new_value(conn, window, property, Duration::from_secs(5))?.is_none()
-            {
+            if wait_for_property_new_value(conn, window, property, Duration::from_secs(5))?.is_none() {
                 return Ok(None);
             }
             let chunk = conn
@@ -512,8 +484,7 @@ fn handle_selection_request(
     }
 
     let matches_target = ev.target == owned.mime_atom
-        || (owned.is_text
-            && (ev.target == atoms.utf8_string || ev.target == atoms.string || ev.target == atoms.text));
+        || (owned.is_text && (ev.target == atoms.utf8_string || ev.target == atoms.string || ev.target == atoms.text));
 
     if !matches_target {
         return send_notify(conn, ev, 0);
@@ -551,7 +522,9 @@ fn advance_incr_send(
     property: Atom,
     pending: &mut Vec<IncrSend>,
 ) -> Result<()> {
-    let idx = match pending.iter().position(|p| p.requestor == requestor && p.property == property)
+    let idx = match pending
+        .iter()
+        .position(|p| p.requestor == requestor && p.property == property)
     {
         Some(i) => i,
         Option::None => return Ok(()),
