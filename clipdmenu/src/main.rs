@@ -22,12 +22,15 @@ fn run() -> Result<()> {
     let dmenu_args: Vec<String> = std::env::args().skip(1).collect();
     let launcher = std::env::var("CM_LAUNCHER").unwrap_or_else(|_| "dmenu".to_string());
 
+    let mut ids = Vec::new();
     let mut lines = Vec::new();
     if let Some(preview) = clipdmenu_common::last_image_preview() {
-        lines.push(format!("{}\t{}", clipdmenu_common::LAST_IMAGE_ID, preview));
+        ids.push(clipdmenu_common::LAST_IMAGE_ID.to_string());
+        lines.push(format!("{}  {}", ids.len() - 1, preview));
     }
     for entry in clipdmenu_common::read_index() {
-        lines.push(format!("{}\t{}", entry.hash, entry.preview));
+        ids.push(entry.hash.clone());
+        lines.push(format!("{}  {}", ids.len() - 1, entry.preview));
     }
 
     if lines.is_empty() {
@@ -55,7 +58,9 @@ fn run() -> Result<()> {
         return Ok(());
     }
 
-    let id = selection.split('\t').next().unwrap_or("");
+    let idx_str = selection.split_whitespace().next().unwrap_or("");
+    let idx: usize = idx_str.parse().map_err(|_| "couldn't parse selection index")?;
+    let id = ids.get(idx).ok_or("selection index out of range")?;
     if id.is_empty() {
         return Ok(());
     }
