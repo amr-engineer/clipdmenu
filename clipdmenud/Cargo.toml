@@ -1,0 +1,12 @@
+[package]
+name = "clipdmenud"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "clipdmenud"
+path = "src/main.rs"
+
+[dependencies]
+clipdmenu-common = { path = "../common" }
+x11rb = { version = "0.13", features = ["all-extensions"] }
