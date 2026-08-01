@@ -9,8 +9,6 @@ use std::io::{BufRead, BufReader, Write};
 use std::os::unix::net::UnixStream;
 use std::process::{Command, Stdio};
 
-use clipdmenu_common as cm;
-
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn main() {
@@ -25,10 +23,10 @@ fn run() -> Result<()> {
     let launcher = std::env::var("CM_LAUNCHER").unwrap_or_else(|_| "dmenu".to_string());
 
     let mut lines = Vec::new();
-    if let Some(preview) = cm::last_image_preview() {
-        lines.push(format!("{}\t{}", cm::LAST_IMAGE_ID, preview));
+    if let Some(preview) = clipdmenu_common::last_image_preview() {
+        lines.push(format!("{}\t{}", clipdmenu_common::LAST_IMAGE_ID, preview));
     }
-    for entry in cm::read_index() {
+    for entry in clipdmenu_common::read_index() {
         lines.push(format!("{}\t{}", entry.hash, entry.preview));
     }
 
@@ -66,7 +64,7 @@ fn run() -> Result<()> {
 }
 
 fn send_select(id: &str) -> Result<()> {
-    let path = cm::socket_path();
+    let path = clipdmenu_common::socket_path();
     let mut stream = UnixStream::connect(&path)
         .map_err(|e| format!("cannot reach clipdmenud at {}: {e} (is it running?)", path.display()))?;
 
