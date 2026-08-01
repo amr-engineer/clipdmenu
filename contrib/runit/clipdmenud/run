@@ -1,0 +1,13 @@
+#!/bin/sh
+# runit service script for clipdmenud.
+#
+# clipdmenud needs a running X session, so this must run as the user who owns
+# that session, with DISPLAY/XAUTHORITY pointed at it. Edit the three
+# variables below to match your setup.
+
+CLIPDMENUD_USER=youruser
+DISPLAY=:0
+XAUTHORITY="/home/${CLIPDMENUD_USER}/.Xauthority"
+
+export DISPLAY XAUTHORITY
+exec chpst -u "$CLIPDMENUD_USER" "/home/${CLIPDMENUD_USER}/.local/bin/clipdmenud"
