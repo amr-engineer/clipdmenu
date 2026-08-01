@@ -10,4 +10,11 @@ DISPLAY=:0
 XAUTHORITY="/home/${CLIPDMENUD_USER}/.Xauthority"
 
 export DISPLAY XAUTHORITY
-exec chpst -u "$CLIPDMENUD_USER" "/home/${CLIPDMENUD_USER}/.local/bin/clipdmenud"
+
+BIN="/home/${CLIPDMENUD_USER}/.local/bin/clipdmenud"
+[ -x "$BIN" ] || BIN="/usr/local/bin/clipdmenud"
+[ -x "$BIN" ] || BIN="/usr/bin/clipdmenud"
+[ -x "$BIN" ] || BIN="/bin/clipdmenud"
+[ -x "$BIN" ] || { echo "clipdmenud: no binary found" >&2; exit 1; }
+
+exec chpst -u "$CLIPDMENUD_USER" "$BIN"
