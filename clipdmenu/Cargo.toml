@@ -1,0 +1,11 @@
+[package]
+name = "clipdmenu"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "clipdmenu"
+path = "src/main.rs"
+
+[dependencies]
+clipdmenu-common = { path = "../common" }
