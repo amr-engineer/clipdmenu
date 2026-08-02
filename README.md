@@ -12,14 +12,11 @@ cargo build --release
 
 No required runtime dependencies except [`x11rb`](https://github.com/psychon/x11rb).
 
-Run the daemon persistently in the background either by adding it to WM/session autostart or using superviser like runit or systemd.
+Run the daemon persistently in the background by adding it to WM/session autostart.
 
 ```sh
 clipdmenud &
 ```
-
-if you supervise it with runit or systemd (service dir in `contrib/`) make sure to set `CLIPDMENUD_USER` (and `DISPLAY` / `XAUTHORITY` if they differ from `:0` / `~/.Xauthority`) as clipdmenud needs to
-run as the user owning the X11 session,
 
 we suggest to bind `clipdmenu` to a hotkey in your WM or using [`sxhkd`](https://github.com/baskerville/sxhkd).
 

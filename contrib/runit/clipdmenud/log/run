@@ -1,6 +1,0 @@
-#!/bin/sh
-
-mkdir -p /var/log/clipdmenud
-chown root:root /var/log/clipdmenud
-
-exec svlogd -tt /var/log/clipdmenud
