@@ -10,18 +10,18 @@ checksum = "b588b76d00fde79687d7646a9b5bdf3cc0f655e0bbd080335a95d7e96f3587da"
 
 [[package]]
 name = "clipdmenu"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "clipdmenu-common",
 ]
 
 [[package]]
 name = "clipdmenu-common"
-version = "0.1.0"
+version = "1.0.0"
 
 [[package]]
 name = "clipdmenud"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "clipdmenu-common",
  "x11rb",
