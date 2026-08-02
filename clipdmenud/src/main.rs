@@ -166,6 +166,7 @@ fn run() -> Result<()> {
             match event {
                 Event::XfixesSelectionNotify(ev) => {
                     if ev.owner != 0
+                        && ev.owner != window
                         && (ev.selection == atoms.clipboard || (cfg.watch_primary && ev.selection == atoms.primary))
                     {
                         if let Err(e) = capture_selection(&conn, window, ev.selection, &atoms, cfg.max_items) {
